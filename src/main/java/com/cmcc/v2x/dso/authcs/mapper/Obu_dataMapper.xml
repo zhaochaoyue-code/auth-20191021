@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cmcc.v2x.dso.authcs.mapper.Obu_dataMapper" >
+  <resultMap id="BaseResultMap" type="com.cmcc.v2x.dso.authcs.model.Obu_data" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="obu_name" property="obuName" jdbcType="VARCHAR" />
+    <result column="obu_type_code" property="obuTypeCode" jdbcType="CHAR" />
+    <result column="obu_type_name" property="obuTypeName" jdbcType="VARCHAR" />
+    <result column="manufacturer_code" property="manufacturerCode" jdbcType="VARCHAR" />
+    <result column="manufacturer_name" property="manufacturerName" jdbcType="VARCHAR" />
+    <result column="work_status" property="workStatus" jdbcType="CHAR" />
+    <result column="status_sync_time" property="statusSyncTime" jdbcType="TIMESTAMP" />
+    <result column="register_time" property="registerTime" jdbcType="TIMESTAMP" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="obu_imei" property="obuImei" jdbcType="VARCHAR" />
+    <result column="obu_sn" property="obuSn" jdbcType="VARCHAR" />
+    <result column="obu_mac" property="obuMac" jdbcType="VARCHAR" />
+    <result column="obu_id" property="obuId" jdbcType="INTEGER" />
+    <result column="ip" property="ip" jdbcType="VARCHAR" />
+    <result column="sim_number" property="simNumber" jdbcType="VARCHAR" />
+    <result column="obu_imsi" property="obuImsi" jdbcType="VARCHAR" />
+    <result column="equipment_serial_number" property="equipmentSerialNumber" jdbcType="VARCHAR" />
+    <result column="software_version_info" property="softwareVersionInfo" jdbcType="VARCHAR" />
+    <result column="hardware_version_info" property="hardwareVersionInfo" jdbcType="VARCHAR" />
+    <result column="vehicle_kind" property="vehicleKind" jdbcType="VARCHAR" />
+    <result column="vehicle_type" property="vehicleType" jdbcType="VARCHAR" />
+    <result column="terminal_type" property="terminalType" jdbcType="VARCHAR" />
+    <result column="auto_increase_seq" property="autoIncreaseSeq" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, obu_name, obu_type_code, obu_type_name, manufacturer_code, manufacturer_name, 
+    work_status, status_sync_time, register_time, create_time, update_time, obu_imei, 
+    obu_sn, obu_mac, obu_id, ip, sim_number, obu_imsi, equipment_serial_number, software_version_info, 
+    hardware_version_info, vehicle_kind, vehicle_type, terminal_type, auto_increase_seq
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from obu_data
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from obu_data
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.cmcc.v2x.dso.authcs.model.Obu_data" >
+    insert into obu_data (id, obu_name, obu_type_code, 
+      obu_type_name, manufacturer_code, manufacturer_name, 
+      work_status, status_sync_time, register_time, 
+      create_time, update_time, obu_imei, 
+      obu_sn, obu_mac, obu_id, 
+      ip, sim_number, obu_imsi, 
+      equipment_serial_number, software_version_info, 
+      hardware_version_info, vehicle_kind, vehicle_type, 
+      terminal_type, auto_increase_seq)
+    values (#{id,jdbcType=INTEGER}, #{obuName,jdbcType=VARCHAR}, #{obuTypeCode,jdbcType=CHAR}, 
+      #{obuTypeName,jdbcType=VARCHAR}, #{manufacturerCode,jdbcType=VARCHAR}, #{manufacturerName,jdbcType=VARCHAR}, 
+      #{workStatus,jdbcType=CHAR}, #{statusSyncTime,jdbcType=TIMESTAMP}, #{registerTime,jdbcType=TIMESTAMP}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{obuImei,jdbcType=VARCHAR}, 
+      #{obuSn,jdbcType=VARCHAR}, #{obuMac,jdbcType=VARCHAR}, #{obuId,jdbcType=INTEGER}, 
+      #{ip,jdbcType=VARCHAR}, #{simNumber,jdbcType=VARCHAR}, #{obuImsi,jdbcType=VARCHAR}, 
+      #{equipmentSerialNumber,jdbcType=VARCHAR}, #{softwareVersionInfo,jdbcType=VARCHAR}, 
+      #{hardwareVersionInfo,jdbcType=VARCHAR}, #{vehicleKind,jdbcType=VARCHAR}, #{vehicleType,jdbcType=VARCHAR}, 
+      #{terminalType,jdbcType=VARCHAR}, #{autoIncreaseSeq,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.cmcc.v2x.dso.authcs.model.Obu_data" >
+    insert into obu_data
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="obuName != null" >
+        obu_name,
+      </if>
+      <if test="obuTypeCode != null" >
+        obu_type_code,
+      </if>
+      <if test="obuTypeName != null" >
+        obu_type_name,
+      </if>
+      <if test="manufacturerCode != null" >
+        manufacturer_code,
+      </if>
+      <if test="manufacturerName != null" >
+        manufacturer_name,
+      </if>
+      <if test="workStatus != null" >
+        work_status,
+      </if>
+      <if test="statusSyncTime != null" >
+        status_sync_time,
+      </if>
+      <if test="registerTime != null" >
+        register_time,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="updateTime != null" >
+        update_time,
+      </if>
+      <if test="obuImei != null" >
+        obu_imei,
+      </if>
+      <if test="obuSn != null" >
+        obu_sn,
+      </if>
+      <if test="obuMac != null" >
+        obu_mac,
+      </if>
+      <if test="obuId != null" >
+        obu_id,
+      </if>
+      <if test="ip != null" >
+        ip,
+      </if>
+      <if test="simNumber != null" >
+        sim_number,
+      </if>
+      <if test="obuImsi != null" >
+        obu_imsi,
+      </if>
+      <if test="equipmentSerialNumber != null" >
+        equipment_serial_number,
+      </if>
+      <if test="softwareVersionInfo != null" >
+        software_version_info,
+      </if>
+      <if test="hardwareVersionInfo != null" >
+        hardware_version_info,
+      </if>
+      <if test="vehicleKind != null" >
+        vehicle_kind,
+      </if>
+      <if test="vehicleType != null" >
+        vehicle_type,
+      </if>
+      <if test="terminalType != null" >
+        terminal_type,
+      </if>
+      <if test="autoIncreaseSeq != null" >
+        auto_increase_seq,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="obuName != null" >
+        #{obuName,jdbcType=VARCHAR},
+      </if>
+      <if test="obuTypeCode != null" >
+        #{obuTypeCode,jdbcType=CHAR},
+      </if>
+      <if test="obuTypeName != null" >
+        #{obuTypeName,jdbcType=VARCHAR},
+      </if>
+      <if test="manufacturerCode != null" >
+        #{manufacturerCode,jdbcType=VARCHAR},
+      </if>
+      <if test="manufacturerName != null" >
+        #{manufacturerName,jdbcType=VARCHAR},
+      </if>
+      <if test="workStatus != null" >
+        #{workStatus,jdbcType=CHAR},
+      </if>
+      <if test="statusSyncTime != null" >
+        #{statusSyncTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="registerTime != null" >
+        #{registerTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null" >
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="obuImei != null" >
+        #{obuImei,jdbcType=VARCHAR},
+      </if>
+      <if test="obuSn != null" >
+        #{obuSn,jdbcType=VARCHAR},
+      </if>
+      <if test="obuMac != null" >
+        #{obuMac,jdbcType=VARCHAR},
+      </if>
+      <if test="obuId != null" >
+        #{obuId,jdbcType=INTEGER},
+      </if>
+      <if test="ip != null" >
+        #{ip,jdbcType=VARCHAR},
+      </if>
+      <if test="simNumber != null" >
+        #{simNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="obuImsi != null" >
+        #{obuImsi,jdbcType=VARCHAR},
+      </if>
+      <if test="equipmentSerialNumber != null" >
+        #{equipmentSerialNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="softwareVersionInfo != null" >
+        #{softwareVersionInfo,jdbcType=VARCHAR},
+      </if>
+      <if test="hardwareVersionInfo != null" >
+        #{hardwareVersionInfo,jdbcType=VARCHAR},
+      </if>
+      <if test="vehicleKind != null" >
+        #{vehicleKind,jdbcType=VARCHAR},
+      </if>
+      <if test="vehicleType != null" >
+        #{vehicleType,jdbcType=VARCHAR},
+      </if>
+      <if test="terminalType != null" >
+        #{terminalType,jdbcType=VARCHAR},
+      </if>
+      <if test="autoIncreaseSeq != null" >
+        #{autoIncreaseSeq,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.cmcc.v2x.dso.authcs.model.Obu_data" >
+    update obu_data
+    <set >
+      <if test="obuName != null" >
+        obu_name = #{obuName,jdbcType=VARCHAR},
+      </if>
+      <if test="obuTypeCode != null" >
+        obu_type_code = #{obuTypeCode,jdbcType=CHAR},
+      </if>
+      <if test="obuTypeName != null" >
+        obu_type_name = #{obuTypeName,jdbcType=VARCHAR},
+      </if>
+      <if test="manufacturerCode != null" >
+        manufacturer_code = #{manufacturerCode,jdbcType=VARCHAR},
+      </if>
+      <if test="manufacturerName != null" >
+        manufacturer_name = #{manufacturerName,jdbcType=VARCHAR},
+      </if>
+      <if test="workStatus != null" >
+        work_status = #{workStatus,jdbcType=CHAR},
+      </if>
+      <if test="statusSyncTime != null" >
+        status_sync_time = #{statusSyncTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="registerTime != null" >
+        register_time = #{registerTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null" >
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="obuImei != null" >
+        obu_imei = #{obuImei,jdbcType=VARCHAR},
+      </if>
+      <if test="obuSn != null" >
+        obu_sn = #{obuSn,jdbcType=VARCHAR},
+      </if>
+      <if test="obuMac != null" >
+        obu_mac = #{obuMac,jdbcType=VARCHAR},
+      </if>
+      <if test="obuId != null" >
+        obu_id = #{obuId,jdbcType=INTEGER},
+      </if>
+      <if test="ip != null" >
+        ip = #{ip,jdbcType=VARCHAR},
+      </if>
+      <if test="simNumber != null" >
+        sim_number = #{simNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="obuImsi != null" >
+        obu_imsi = #{obuImsi,jdbcType=VARCHAR},
+      </if>
+      <if test="equipmentSerialNumber != null" >
+        equipment_serial_number = #{equipmentSerialNumber,jdbcType=VARCHAR},
+      </if>
+      <if test="softwareVersionInfo != null" >
+        software_version_info = #{softwareVersionInfo,jdbcType=VARCHAR},
+      </if>
+      <if test="hardwareVersionInfo != null" >
+        hardware_version_info = #{hardwareVersionInfo,jdbcType=VARCHAR},
+      </if>
+      <if test="vehicleKind != null" >
+        vehicle_kind = #{vehicleKind,jdbcType=VARCHAR},
+      </if>
+      <if test="vehicleType != null" >
+        vehicle_type = #{vehicleType,jdbcType=VARCHAR},
+      </if>
+      <if test="terminalType != null" >
+        terminal_type = #{terminalType,jdbcType=VARCHAR},
+      </if>
+      <if test="autoIncreaseSeq != null" >
+        auto_increase_seq = #{autoIncreaseSeq,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.cmcc.v2x.dso.authcs.model.Obu_data" >
+    update obu_data
+    set obu_name = #{obuName,jdbcType=VARCHAR},
+      obu_type_code = #{obuTypeCode,jdbcType=CHAR},
+      obu_type_name = #{obuTypeName,jdbcType=VARCHAR},
+      manufacturer_code = #{manufacturerCode,jdbcType=VARCHAR},
+      manufacturer_name = #{manufacturerName,jdbcType=VARCHAR},
+      work_status = #{workStatus,jdbcType=CHAR},
+      status_sync_time = #{statusSyncTime,jdbcType=TIMESTAMP},
+      register_time = #{registerTime,jdbcType=TIMESTAMP},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP},
+      obu_imei = #{obuImei,jdbcType=VARCHAR},
+      obu_sn = #{obuSn,jdbcType=VARCHAR},
+      obu_mac = #{obuMac,jdbcType=VARCHAR},
+      obu_id = #{obuId,jdbcType=INTEGER},
+      ip = #{ip,jdbcType=VARCHAR},
+      sim_number = #{simNumber,jdbcType=VARCHAR},
+      obu_imsi = #{obuImsi,jdbcType=VARCHAR},
+      equipment_serial_number = #{equipmentSerialNumber,jdbcType=VARCHAR},
+      software_version_info = #{softwareVersionInfo,jdbcType=VARCHAR},
+      hardware_version_info = #{hardwareVersionInfo,jdbcType=VARCHAR},
+      vehicle_kind = #{vehicleKind,jdbcType=VARCHAR},
+      vehicle_type = #{vehicleType,jdbcType=VARCHAR},
+      terminal_type = #{terminalType,jdbcType=VARCHAR},
+      auto_increase_seq = #{autoIncreaseSeq,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>
