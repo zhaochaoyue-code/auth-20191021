@@ -46,7 +46,7 @@ public class KeyController {
             return code;
         }
 //        String authdata = MD5Util.getMD5Str(carid + ueMAC + requestime);
-        String authdata ="123";//测试用
+        String authdata ="123";//测试用rerwerewrew
 
         if (!hashInfo.equals(authdata)) {//AB281E7556CA2945
             code.setCode(Respcode.HASHERROR_CODE);
