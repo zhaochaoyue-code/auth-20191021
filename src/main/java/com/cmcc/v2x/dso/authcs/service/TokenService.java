@@ -10,8 +10,7 @@ import java.util.List;
 public interface TokenService {
 
     Object getObj(int carid,String requestime,String mac) throws Exception;
-    Respcode getAllObj(int carid, String requestime, String mac) throws Exception;
-    Object other(int carid,String requestime,String mac)throws Exception;
+    Object getAllObj(int carid, String requestime, String mac) throws Exception;
 
      Auth_token getTokenByID(int id);
      int updateToken(Auth_token token);

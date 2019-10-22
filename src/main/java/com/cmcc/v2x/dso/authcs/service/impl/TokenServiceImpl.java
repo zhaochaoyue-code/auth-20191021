@@ -195,26 +195,37 @@ public class TokenServiceImpl implements TokenService {
 
     @Transactional
     @Override
-    public Respcode getAllObj(int carid, String requestime, String mac) throws Exception {
+    public Object getAllObj(int carid, String requestime, String mac) throws Exception {
         Respcode code = new Respcode();
-        Result resultObj = new Result();
         Auth_token auth_token = tokenMapper.selectByPrimaryKey(carid);
         Auth_key auth_key = keyMapper.selectByPrimaryKey(carid);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMsMddHHmmsSSS");
         String systime = sdf.format(new Date());
         Auth_token tokenObj = new Auth_token();
         Auth_key keyObj = new Auth_key();
+        Result resultObj = new Result();
+        long checktime =  1;
         int returnresult =0;
+
         //第一种情况 都为空
         if(auth_token ==null && auth_key==null){
-          return tokenandkeyisnull(carid, requestime, mac);
+          tokenandkeyisnull(carid, requestime, mac);
+          return  forwardV2X(carid, requestime, mac);
+        }
+
+        //第二种情况 2.都有值 时间问题  要过期 和快过期 备份数据情况1
+        if(auth_token !=null && auth_key!=null && checktime < 0){
+//        String reqtime =sdf.format(auth_token.getTimestamp());
+//        long checktime =  checktime(reqtime);
+//            comparetodate(requestime,systime);
+           deladd(carid, requestime, mac,auth_token,auth_key);
+           tokenandkeyisnull(carid, requestime, mac);
+           return  forwardV2X(carid, requestime, mac);
         }
 
         //第三种情况
         if(auth_token !=null && auth_key!=null &&(auth_token.getStatus()).equals("处理完成") &&(auth_key.getStatus()).equals("处理完成")){
-
-            return code;
-            /*String id =String.valueOf(auth_token.getCarid());
+            String id =String.valueOf(auth_token.getCarid());
             String token =auth_token.getAuthtoken();
             String key = auth_key.getAuthkey();
             String tokenvalidtime =sdf.format(auth_token.getTimestamp());
@@ -227,84 +238,64 @@ public class TokenServiceImpl implements TokenService {
             resultObj.setKeyvalidtime(keyvalidtime);
             resultObj.setResult(returnresult);
             resultObj.setRandomnum((int)(Math.random()*100+1));//1到100随机数
-            return  resultObj;*/
+            return  resultObj;
         }
 
         //第四种情况 有记录 没过期，也没有快过期  状态  初始
         if(auth_token !=null && auth_key!=null &&(auth_token.getStatus()).equals("初始") &&(auth_token.getStatus()).equals("初始")){
             //再次发送http请求  超时时间 查出来时间计算
-            code.setCode(10507);
-            code.setMessage(Respcode.REQ_MES);
-            return code;
+//            code.setCode(10507);
+//            code.setMessage(Respcode.REQ_MES);
+//            return code;
+            return  forwardV2X(carid, requestime, mac);
 
         }
-
-        //第二种情况 2.都有值 时间问题  要过期 和快过期 备份数据情况1
-        if(auth_token !=null && auth_key!=null && comparetodate(requestime,systime)){
-            String tokentime =sdf.format(auth_token.getTimestamp());
-            String keytime = sdf.format(auth_key.getTimestamp());
-            comparetodate(requestime,systime);
-            String status = auth_token.getStatus();
-            String status1 = auth_key.getStatus();
-            Date date = auth_token.getTimestamp();
-            Date date1 = auth_key.getTimestamp();
-            String authtoken = auth_token.getAuthtoken();
-            String authkey = auth_key.getAuthkey();
-            int  car = auth_token.getCarid();
-            int  car1 = auth_key.getCarid();
-            String  ma = auth_token.getMac();
-            String  ma1 = auth_key.getMac();
-            int ver = auth_token.getVersion();
-            int ver1 = auth_key.getVersion();
-            String reqtime =sdf.format(auth_token.getTimestamp());
-            long checktime =  checktime(reqtime);
-//            long checktime =  -1;
-                if(checktime < 0){//已过期
-
-
-                    int a = tokenMapper.deleteByPrimaryKey(carid);
-                    int a1 = keyMapper.deleteByPrimaryKey(carid);
-                    if(a<1|| a1<1){
-                        code.setCode(10501);
-                        code.setMessage(Respcode.ERROR_MES);
-                        return code;
-                    }
-                    Auth_tokenlog authTokenlog = new Auth_tokenlog();
-                    Auth_keylog authKeylog = new Auth_keylog();
-
-                    authTokenlog.setAuthtoken(authtoken);
-                    authTokenlog.setCarid(car);
-                    authTokenlog.setTimestamp(date);
-                    authTokenlog.setMac(ma);
-                    authTokenlog.setVersion(ver);
-                    authTokenlog.setStatus(status);
-
-                    authKeylog.setAuthkey(authkey);
-                    authKeylog.setCarid(car1);
-                    authKeylog.setTimestamp(date1);
-                    authKeylog.setMac(ma1);
-                    authKeylog.setVersion(ver1);
-                    authKeylog.setStatus(status1);
-
-                    int b = tokenlogMapper.insertSelective(authTokenlog);
-                    int b1 = keylogMapper.insertSelective(authKeylog);
-                    if(b<1 || b1<1){
-                        code.setCode(10501);
-                        code.setMessage(Respcode.ERROR_MES);
-                        return code;
-                    }
-                    return tokenandkeyisnull(carid, requestime, mac);
-                }else{//还未过期
-                    code.setCode(10201);
-                    String timeMes = "已请求token "+Respcode.TIME_MES+checktime+"毫秒";
-                    code.setMessage(timeMes);
-                    return code;
-                }
-        }
-
         return code;
     }
 
+    private Object backue(int carid,String token1,String key,String requestime,String tvaildate,int returnresult) throws Exception {
+        Respcode respcode = new Respcode();
+        Auth_token auth_tokenfin = tokenMapper.selectByPrimaryKey(carid);
+        Auth_key auth_keyfin = keyMapper.selectByPrimaryKey(carid);
+        String tokenstatus = auth_keyfin.getStatus();
+        String keystatus = auth_keyfin.getStatus();
+        Auth_token tokenObj = new Auth_token();
+        Auth_key keyObj = new Auth_key();
+        Result resultObj = new Result();
+        try {
+            if (tokenstatus.equals("初始") && keystatus.equals("初始")) {
+                tokenObj.setStatus("处理完成");
+                tokenObj.setCarid(carid);
+                tokenObj.setVersion(0);
+                //int i =tokenService.updateToken(token);
+                int i = tokenMapper.updateByKeyAndStatus(tokenObj);
+
+                keyObj.setStatus("处理完成");
+                keyObj.setCarid(carid);
+                keyObj.setVersion(0);
+                int i1 = keyMapper.updateByKeyAndStatus(keyObj);
+                if (i < 1 || i1 < 1) {
+                    throw new Exception(Respcode.ERROR_MES);
+                }
+            }
+            //拿到数据
+            //调用AES工具类把拿到的数据进行加密
+            String password = EncryptionUtil.encrypt(token1);
+            resultObj.setToken(password);
+            resultObj.setKey(EncryptionUtil.encrypt(key));
+            resultObj.setTokenvalidtime(tvaildate);
+            resultObj.setKeyvalidtime(tvaildate);
+            resultObj.setResult(returnresult);
+            resultObj.setRandomnum((int) (Math.random() * 100 + 1));//1到100随机数
+        } catch (Exception e) {
+//            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            e.printStackTrace();
+            respcode.setCode(10502);
+            respcode.setMessage(Respcode.ERROR_MES);
+            return  respcode;
+        }
+        return resultObj;
+        }
     private boolean comparetodate(String requestime, String systime) {
         int result=requestime.compareTo(systime);
         if (result!=0){
@@ -314,117 +305,17 @@ public class TokenServiceImpl implements TokenService {
         }
     }
 
-    @Override
-    public Object other(int carid, String requestime, String mac) throws Exception {
-        int returnresult =0;
-        Result resultObj = new Result();
-        Auth_token tokenObj = new Auth_token();
-        Auth_key keyObj = new Auth_key();
-        Respcode code = new Respcode();
-        String tvaildate = String.valueOf(new SimpleDateFormat("yyyyMsMddHHmmsSSS").parse(requestime).getTime()+3600000);
-        String kvaildate = String.valueOf(new SimpleDateFormat("yyyyMsMddHHmmsSSS").parse(requestime).getTime()+3600000);
-        try {
-            //auth处理完成转发给v2x
-            Auth_token auth_tokenfin = tokenMapper.selectByPrimaryKey(carid);
-            Auth_key auth_keyfin = keyMapper.selectByPrimaryKey(carid);
-
-            // key validtime  timestamp id token validtime timestamp
-            String id =String.valueOf(auth_tokenfin.getCarid());
-            String token1 =auth_tokenfin.getAuthtoken();
-            String tokenstatus =auth_tokenfin.getStatus();
-            String keystatus =auth_keyfin.getStatus();
-            String key = auth_keyfin.getAuthkey();
-            String tokenvalidtime =new SimpleDateFormat("yyyyMsMddHHmmsSSS").format(auth_tokenfin.getTimestamp());
-            String keyvalidtime =new SimpleDateFormat("yyyyMsMddHHmmsSSS").format(auth_keyfin.getTimestamp());
-
-
-            RestTemplate restTemplate = new RestTemplate();
-            Map<String, String> params = new HashMap<String, String>();
-
-
-            params.put("id",id);
-            params.put("token",token1);
-            params.put("key",key);
-            params.put("timestamp",requestime);
-            params.put("validtime",tvaildate);
-//            params.put("validtime",kvaildate);
-
-            //auth db 操作 新增  之后 请求http放到事务外
-            String url  ="http://localhost:8080/test";
-            ResponseEntity<String> response = restTemplate.postForEntity( url, params , String.class );
-            System.out.println(response.getBody());
-            String mssage = response.getBody();//返回结果和具体信息（token、key）
-            JSONObject obj1 = JSONObject.fromObject(mssage);
-            if (mssage.length() == 0) {
-                code.setCode(10505);
-                code.setMessage(Respcode.NOBACK_MES);
-                return code;
-            }
-
-            returnresult = obj1.getInt("result");
-            String returntimestamp = obj1.getString("timestamp");
-
-            if(returnresult==0){
-                //成功
-                //v2x收到信息返回成功auth 更新token表,key表状态为处理完成
-                if(tokenstatus.equals("初始") && keystatus.equals("初始")) {
-                    tokenObj.setStatus("处理完成");
-                    tokenObj.setCarid(carid);
-                    tokenObj.setVersion(0);
-                    //int i =tokenService.updateToken(token);
-                    int i = tokenMapper.updateByKeyAndStatus(tokenObj);
-
-                    keyObj.setStatus("处理完成");
-                    keyObj.setCarid(carid);
-                    keyObj.setVersion(0);
-                    int i1 = keyMapper.updateByKeyAndStatus(keyObj);
-                    if (i < 1 || i1 < 1) {
-                        code.setCode(10501);
-                        code.setMessage(Respcode.ERROR_MES);
-                        return code;
-                    }
-                }
-                //拿到数据
-                //调用AES工具类把拿到的数据进行加密
-                String password =  EncryptionUtil.encrypt(token1);
-                resultObj.setToken(password);
-                resultObj.setKey(EncryptionUtil.encrypt(key));
-                resultObj.setTokenvalidtime(tokenvalidtime);
-                resultObj.setKeyvalidtime(keyvalidtime);
-                resultObj.setResult(returnresult);
-                resultObj.setRandomnum((int)(Math.random()*100+1));//1到100随机数
-                return  resultObj;
-            }else if(returnresult==1){//终端不合法
-                throw new Exception("终端不合法");
-            }else if(returnresult==2){//报文不能识别
-                throw new Exception("报文不能识别");
-            }else{
-                throw new Exception("转发系统内部错误");
-            }
-        }catch (Exception e){
-//            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            if(returnresult==1){//不合法
-                code.setCode(10503);
-                code.setMessage(Respcode.NO_MES);
-                return code;
-            }else if(returnresult==2) {//不识别
-                code.setCode(10504);
-                code.setMessage(Respcode.NOTKNOW_MES);
-                return code;
-            }else if(returnresult==99){
-                code.setCode(10507);
-                code.setMessage(Respcode.REQ_MES);
-                return code;
-            }
-        }
-        return code;
-    }
-
-    private Respcode tokenandkeyisnull(int carid, String requestime, String mac) throws Exception{
+    /**
+     * token 和key 都为空 或者删除之前的错误数据 重新插入表 方法1
+     * @param carid
+     * @param requestime
+     * @param mac
+     * @return
+     * @throws Exception
+     */
+    private void tokenandkeyisnull(int carid, String requestime, String mac) throws Exception{
         Respcode code = new Respcode();
         Result resultObj = new Result();
-        Auth_token auth_token = tokenMapper.selectByPrimaryKey(carid);
-        Auth_key auth_key = keyMapper.selectByPrimaryKey(carid);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMsMddHHmmsSSS");
 //        String tvaildate = String.valueOf(sdf.parse(requestime).getTime()+3600000);
 //        String kvaildate = String.valueOf(sdf.parse(requestime).getTime()+3600000);
@@ -450,21 +341,43 @@ public class TokenServiceImpl implements TokenService {
             keyObj.setAuthkey(UUID.randomUUID().toString());
             int result1 = keyMapper.insert(keyObj);
             if(result1<1 ||result<1 ) {
-                code.setCode(10501);
-                code.setMessage(Respcode.ERROR_MES);
-                return code;
+                throw new Exception(Respcode.ERROR_MES);
             }
+        }catch (Exception e){
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            e.printStackTrace();
+        }
+    }
 
-            /*//auth处理完成转发给v2x
-            Auth_token auth_tokenfin = tokenMapper.selectByPrimaryKey(carid);
-            Auth_key auth_keyfin = keyMapper.selectByPrimaryKey(carid);
+    /**
+     * 发送请求到 转发系统  必要参数 方法2
+     * @param carid
+     * @param requestime
+     * @param mac
+     * @return
+     * @throws Exception
+     */
+    public Object forwardV2X(int carid, String requestime, String mac) throws Exception {
+        int returnresult =0;
+        Result resultObj = new Result();
+        Auth_token tokenObj = new Auth_token();
+        Auth_key keyObj = new Auth_key();
+        Respcode code = new Respcode();
+        String tvaildate = String.valueOf(new SimpleDateFormat("yyyyMsMddHHmmsSSS").parse(requestime).getTime()+3600000);
+        String kvaildate = String.valueOf(new SimpleDateFormat("yyyyMsMddHHmmsSSS").parse(requestime).getTime()+3600000);
+        Auth_token auth_tokenfin = tokenMapper.selectByPrimaryKey(carid);
+        Auth_key auth_keyfin = keyMapper.selectByPrimaryKey(carid);
+        try {
+            //auth处理完成转发给v2x
 
             // key validtime  timestamp id token validtime timestamp
             String id =String.valueOf(auth_tokenfin.getCarid());
-            String token =auth_tokenfin.getAuthtoken();
+            String token1 =auth_tokenfin.getAuthtoken();
+            String tokenstatus =auth_tokenfin.getStatus();
+            String keystatus =auth_keyfin.getStatus();
             String key = auth_keyfin.getAuthkey();
-            String tokenvalidtime =sdf.format(auth_tokenfin.getTimestamp());
-            String keyvalidtime =sdf.format(auth_keyfin.getTimestamp());
+            String tokenvalidtime =new SimpleDateFormat("yyyyMsMddHHmmsSSS").format(auth_tokenfin.getTimestamp());
+            String keyvalidtime =new SimpleDateFormat("yyyyMsMddHHmmsSSS").format(auth_keyfin.getTimestamp());
 
 
             RestTemplate restTemplate = new RestTemplate();
@@ -472,82 +385,112 @@ public class TokenServiceImpl implements TokenService {
 
 
             params.put("id",id);
-            params.put("token",token);
+            params.put("token",token1);
             params.put("key",key);
             params.put("timestamp",requestime);
             params.put("validtime",tvaildate);
-            params.put("validtime",kvaildate);
+//            params.put("validtime",kvaildate);
 
-            //auth db 操作 新增  之后 请求http放到事务外
+            //auth db 操作 新增  之后 请求http放到事务外 不放到事务外 ，在事务中发请求
             String url  ="http://localhost:8080/test";
             ResponseEntity<String> response = restTemplate.postForEntity( url, params , String.class );
             System.out.println(response.getBody());
             String mssage = response.getBody();//返回结果和具体信息（token、key）
-            JSONObject obj = JSONObject.fromObject(mssage);
+            JSONObject obj1 = JSONObject.fromObject(mssage);
             if (mssage.length() == 0) {
-                code.setCode(10505);
-                code.setMessage(Respcode.NOBACK_MES);
-                return code;
+                //返回code 10505 或者抛出异常
+                throw new Exception(Respcode.NOBACK_MES);
             }
 
-            returnresult = obj.getInt("result");
-            String returntimestamp = obj.getString("timestamp");
+            returnresult = obj1.getInt("result");
+            String returntimestamp = obj1.getString("timestamp");
 
-            if(returnresult==0){
-                //成功
+            if(returnresult==0){ //成功
                 //v2x收到信息返回成功auth 更新token表,key表状态为处理完成
-                tokenObj.setStatus("处理完成");
-                tokenObj.setCarid(carid);
-                tokenObj.setVersion(0);
-                //int i =tokenService.updateToken(token);
-                int i = tokenMapper.updateByKeyAndStatus(tokenObj);
-
-                keyObj.setStatus("处理完成");
-                keyObj.setCarid(carid);
-                keyObj.setVersion(0);
-                int i1 = keyMapper.updateByKeyAndStatus(keyObj);
-                if(i<1 || i1<1) {
-                    code.setCode(10501);
-                    code.setMessage(Respcode.ERROR_MES);
-                    return code;
-                }
-
-                //拿到数据
-                //调用AES工具类把拿到的数据进行加密
-                String password =  EncryptionUtil.encrypt(token);
-                resultObj.setToken(password);
-                resultObj.setKey(EncryptionUtil.encrypt(key));
-                resultObj.setTokenvalidtime(tokenvalidtime);
-                resultObj.setKeyvalidtime(keyvalidtime);
-                resultObj.setResult(returnresult);
-                resultObj.setRandomnum((int)(Math.random()*100+1));//1到100随机数
-                return  resultObj;
+                Object backue = backue(carid, token1, key, requestime, tvaildate, returnresult);
+                return  backue;
             }else if(returnresult==1){//终端不合法
                 throw new Exception("终端不合法");
             }else if(returnresult==2){//报文不能识别
                 throw new Exception("报文不能识别");
-            }else{
+            }else if(returnresult==99){
                 throw new Exception("转发系统内部错误");
-            }*/
+            }else{
+                throw new Exception("发生错误");
+            }
         }catch (Exception e){
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             if(returnresult==1){//不合法
+                deladd(carid,requestime,mac,auth_tokenfin,auth_keyfin);
                 code.setCode(10503);
                 code.setMessage(Respcode.NO_MES);
                 return code;
             }else if(returnresult==2) {//不识别
+                deladd(carid,requestime,mac,auth_tokenfin,auth_keyfin);
                 code.setCode(10504);
                 code.setMessage(Respcode.NOTKNOW_MES);
                 return code;
             }else if(returnresult==99){
-                code.setCode(10506);
-                code.setMessage(Respcode.V2X_MES);
+                deladd(carid,requestime,mac,auth_tokenfin,auth_keyfin);
+                code.setCode(10507);
+                code.setMessage(Respcode.REQ_MES);
                 return code;
+            }else{
+                e.printStackTrace();
             }
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
         }
         return code;
     }
 
+    private void deladd(int carid, String requestime, String mac,Auth_token auth_token,Auth_key auth_key) throws Exception{
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMsMddHHmmsSSS");
+        String systime = sdf.format(new Date());
+        String tokentime =sdf.format(auth_token.getTimestamp());
+        String keytime = sdf.format(auth_key.getTimestamp());
+        comparetodate(requestime,systime);
+        String status = auth_token.getStatus();
+        String status1 = auth_key.getStatus();
+        Date date = auth_token.getTimestamp();
+        Date date1 = auth_key.getTimestamp();
+        String authtoken = auth_token.getAuthtoken();
+        String authkey = auth_key.getAuthkey();
+        int  car = auth_token.getCarid();
+        int  car1 = auth_key.getCarid();
+        String  ma = auth_token.getMac();
+        String  ma1 = auth_key.getMac();
+        int ver = auth_token.getVersion();
+        int ver1 = auth_key.getVersion();
+        String reqtime =sdf.format(auth_token.getTimestamp());
+
+        int a = tokenMapper.deleteByPrimaryKey(carid);
+        int a1 = keyMapper.deleteByPrimaryKey(carid);
+        Auth_tokenlog authTokenlog = new Auth_tokenlog();
+        Auth_keylog authKeylog = new Auth_keylog();
+        try {
+        authTokenlog.setAuthtoken(authtoken);
+        authTokenlog.setCarid(car);
+        authTokenlog.setTimestamp(date);
+        authTokenlog.setMac(ma);
+        authTokenlog.setVersion(ver);
+        authTokenlog.setStatus(status);
+
+        authKeylog.setAuthkey(authkey);
+        authKeylog.setCarid(car1);
+        authKeylog.setTimestamp(date1);
+        authKeylog.setMac(ma1);
+        authKeylog.setVersion(ver1);
+        authKeylog.setStatus(status1);
+
+        int b = tokenlogMapper.insertSelective(authTokenlog);
+        int b1 = keylogMapper.insertSelective(authKeylog);
+        if(a<1|| a1<1|| b<1 || b1<1){
+            throw new Exception("操作失败");
+        }
+        }catch (Exception e){
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public Auth_token getTokenByID(int id) {
@@ -634,4 +577,6 @@ public class TokenServiceImpl implements TokenService {
             return minute;
         }
     }
+
+
 }

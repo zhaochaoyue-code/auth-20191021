@@ -56,14 +56,9 @@ public class TokenAndController {
             return code;
         }
 //            下面写业务
-        Respcode respcode  = tokenService.getAllObj(carid,requestime,ueMAC);
-        System.out.println(respcode);
-        Object other = null;
-
-        if(respcode.getCode() !=10507){
-        other = tokenService.other(carid, requestime, ueMAC);
-        }
-        return other;
+        Object obj  = tokenService.getAllObj(carid,requestime,ueMAC);
+        System.out.println(obj);
+        return obj;
 
     }
 

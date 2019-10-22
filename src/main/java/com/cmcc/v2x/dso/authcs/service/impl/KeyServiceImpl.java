@@ -47,7 +47,7 @@ public class KeyServiceImpl implements KeyService {
 
     @Override
     public int updateKeyAndStatus(Auth_key key) {
-        return keyMapper.updateBcyKeyAndStatus(key);
+        return keyMapper.updateByKeyAndStatus(key);
     }
 
     @Override
